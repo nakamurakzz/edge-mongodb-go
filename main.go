@@ -2,27 +2,33 @@ package main
 
 import (
 	"flag"
+	"log"
 
 	"github.com/nakamurakzz/edge-mongodb-go/sensor"
 )
 
 func main() {
+	log.Println("start main")
 
-	// フラグ変数を定義します
+	// register or publish
+	mode := flag.String("mode", "none", "reg or pub")
+
+	// TODO: Validation
 	temperature := flag.Float64("temperature", 0, "Temperature value")
 	humidity := flag.Float64("humidity", 0, "Humidity value")
 
-	// コマンドライン引数を解析します
 	flag.Parse()
 
-	// mongodbに接続
-	mongoDB, err := sensor.NewMongodb()
-	if err != nil {
-		panic(err)
-	}
-	defer mongoDB.Close()
+	sensorUsecase := sensor.NewSensorUsecase()
 
-	// documentを作成
-	document := sensor.NewSensorData(*temperature, *humidity)
-	err = mongoDB.CreateDocument(*document)
+	switch *mode {
+	case "reg":
+		sensorUsecase.Register(temperature, humidity)
+	case "pub":
+		sensorUsecase.Publish()
+	default:
+		log.Println("mode is not reg or pub")
+	}
+
+	log.Println("end main")
 }
