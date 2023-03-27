@@ -1,4 +1,4 @@
-package repository
+package sensor
 
 import (
 	"context"
@@ -9,11 +9,11 @@ import (
 )
 
 type Mongodb struct {
-	Client *mongo.Client
-	dbName string
+	Client     *mongo.Client
+	dbName     string
+	collection string
 }
 
-// シングルトンとして実装する
 var mongodb *Mongodb
 
 func NewMongodb() (*Mongodb, error) {
@@ -30,21 +30,20 @@ func NewMongodb() (*Mongodb, error) {
 	}
 
 	mongodb = &Mongodb{
-		Client: client,
-		dbName: "db2",
+		Client:     client,
+		dbName:     "sensor_db",
+		collection: "sensor",
 	}
 
 	return mongodb, nil
 }
 
-type Content struct {
-	Temperature float64
-	Humidity    float64
-}
-
-func (m *Mongodb) CreateDocument(collection string, document Content) error {
+func (m *Mongodb) CreateDocument(document SensorData) error {
 	log.Println("create document")
-	_, err := m.Client.Database(m.dbName).Collection(collection).InsertOne(context.Background(), document)
+
+	log.Println(document)
+	_, err := m.Client.Database(m.dbName).Collection(m.collection).InsertOne(context.Background(), document)
+
 	if err != nil {
 		log.Println(err.Error())
 		return err
