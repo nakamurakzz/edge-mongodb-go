@@ -38,7 +38,21 @@ func (s *SensorUsecase) Register(sensorData *[]SensorData) {
 func (s *SensorUsecase) Publish() {
 	log.Println("start publish")
 	// documentを取得
+	// isPublishがfalseのものを取得
+	document, err := s.MongoDB.FindDocument(SensorDataFindQuery{
+		IsPublish: false,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
 	// TimeStreamにpublish
+
 	// documentを削除
+	err = s.MongoDB.DeleteDocument(document)
+	if err != nil {
+		panic(err)
+	}
 	log.Println("end publish")
 }
