@@ -32,6 +32,12 @@ func main() {
 
 		// sensorDataをpublish
 		sensorUsecase.Publish()
+
+		// documentを削除
+		err = sensorUsecase.MongoDB.DeleteDocument(sensorData)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	log.Println("end main")

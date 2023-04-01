@@ -10,7 +10,7 @@ type SensorUsecase struct {
 
 func NewSensorUsecase() *SensorUsecase {
 	// mongodbに接続
-	mongoDB, err := NewMongodb()
+	mongoDB, err := NewMongodb("mongodb://localhost:27017")
 	if err != nil {
 		panic(err)
 	}
@@ -48,11 +48,16 @@ func (s *SensorUsecase) Publish() {
 	}
 
 	// TimeStreamにpublish
+	log.Println("publish to TimeStream, data: ", document)
 
-	// documentを削除
-	err = s.MongoDB.DeleteDocument(document)
-	if err != nil {
-		panic(err)
-	}
 	log.Println("end publish")
+}
+
+func (s *SensorUsecase) DeleteDocument(document *[]SensorData) error {
+
+	err := s.MongoDB.DeleteDocument(document)
+	if err != nil {
+		return err
+	}
+	return nil
 }

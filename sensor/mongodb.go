@@ -2,6 +2,7 @@ package sensor
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,12 +21,10 @@ type Mongodb struct {
 
 var mongodb *Mongodb
 
-func NewMongodb() (*Mongodb, error) {
+func NewMongodb(uri string) (*Mongodb, error) {
 	if mongodb != nil {
 		return mongodb, nil
 	}
-
-	uri := "mongodb://localhost:27017"
 
 	log.Println("mongodb connect")
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
@@ -60,6 +59,8 @@ func (m *Mongodb) FindDocument(query SensorDataFindQuery) (*[]SensorData, error)
 
 	documents, err := m.Client.Database(m.dbName).Collection(m.collection).Find(context.Background(), query)
 
+	fmt.Println("------------------")
+	fmt.Println(*documents)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
