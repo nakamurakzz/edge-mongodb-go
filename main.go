@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/nakamurakzz/edge-mongodb-go/sensor"
 )
@@ -10,24 +11,27 @@ import (
 func main() {
 	log.Println("start main")
 
-	// register or publish
-	mode := flag.String("mode", "none", "reg or pub")
-
-	// TODO: Validation
-	temperature := flag.Float64("temperature", 0, "Temperature value")
-	humidity := flag.Float64("humidity", 0, "Humidity value")
-
 	flag.Parse()
 
 	sensorUsecase := sensor.NewSensorUsecase()
+	defer sensorUsecase.MongoDB.Close()
+	sensorDataRepository := sensor.NewFileRepository()
 
-	switch *mode {
-	case "reg":
-		sensorUsecase.Register(temperature, humidity)
-	case "pub":
+	// 30秒おきにsensorUsecase.Registerを実行する
+	ticker := time.Tick(2 * time.Second)
+
+	for range ticker {
+		// sensorDataを取得
+		sensorData, err := sensorDataRepository.GetSensorData()
+		if err != nil {
+			log.Println(err.Error())
+			continue
+		}
+		// sensorDataをローカルに登録
+		sensorUsecase.Register(sensorData)
+
+		// sensorDataをpublish
 		sensorUsecase.Publish()
-	default:
-		log.Println("mode is not reg or pub")
 	}
 
 	log.Println("end main")

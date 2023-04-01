@@ -5,7 +5,7 @@ import (
 )
 
 type SensorUsecase struct {
-	mongoDB *Mongodb
+	MongoDB *Mongodb
 }
 
 func NewSensorUsecase() *SensorUsecase {
@@ -15,21 +15,22 @@ func NewSensorUsecase() *SensorUsecase {
 		panic(err)
 	}
 	return &SensorUsecase{
-		mongoDB: mongoDB,
+		MongoDB: mongoDB,
 	}
 }
 
-func (s *SensorUsecase) Register(temperature *float64, humidity *float64) {
+func (s *SensorUsecase) Register(sensorData *[]SensorData) {
 	log.Println("start register")
 
 	// documentを作成
-	document := NewSensorData(*temperature, *humidity)
-	err := s.mongoDB.CreateDocument(*document)
-	if err != nil {
-		panic(err)
+	// TODO: N回ループしないように修正する
+	for _, data := range *sensorData {
+		document := NewSensorData(data.Temperature, data.Humidity)
+		err := s.MongoDB.CreateDocument(*document)
+		if err != nil {
+			panic(err)
+		}
 	}
-	// TODO: deferはここでいい？
-	defer s.mongoDB.Close()
 
 	log.Println("end register")
 }
@@ -39,6 +40,5 @@ func (s *SensorUsecase) Publish() {
 	// documentを取得
 	// TimeStreamにpublish
 	// documentを削除
-
 	log.Println("end publish")
 }
